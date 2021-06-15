@@ -2,7 +2,10 @@ package jpabook.jpashop.service;
 
 import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.domain.item.Book;
+import jpabook.jpashop.repository.OrderRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,12 @@ public class OrderServiceTest {
 
     @Autowired
     EntityManager em;
+    
+    @Autowired
+    OrderService orderService;
+    
+    @Autowired
+    OrderRepository orderRepository;
 
     @Test
     public void 상품주문() throws Exception{
@@ -39,15 +48,15 @@ public class OrderServiceTest {
         int orderCount = 2;
 
         //when
+        Long orderId = orderService.order(member.getId(), book.getId(), orderCount);
 
         //then
-    }
+        Order getOrder = orderRepository.findOne(orderId);
 
-    @Test
-    public void 주문취소() throws Exception{
-        //given
-        //when
-        //then
+        assertEquals("상품 주문시 상태는 ORDER", OrderStatus.ORDER, getOrder.getStatus());
+        assertEquals("주문한 상품 종류 수가 정확해야 한다.", 1, getOrder.getOrderItems().size());
+        assertEquals("주문 가격은 가격 * 수량이다.", 10000 * orderCount, getOrder.getTotalPrice());
+        assertEquals("주문 수량만큼 재고가 줄어야 한다.", 8, book.getStockQuantity());
     }
 
     @Test
@@ -57,6 +66,10 @@ public class OrderServiceTest {
         //then
     }
 
-
-
+    @Test
+    public void 주문취소() throws Exception{
+        //given
+        //when
+        //then
+    }
 }
